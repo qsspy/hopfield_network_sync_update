@@ -52,12 +52,16 @@ def boolean_to_pl(bool: bool) -> str:
 
 MAXIMUM_ITERATIONS = 20
 MATRIX_MULTIPLAYER = 1.0 / 3.0
-MATRIX = [
+MATRIX_CASE_1 = [
     [0.0, -2.0, 2.0],
     [-2.0, 0.0, -2.0],
     [2.0, -2.0, 0.0]
 ]
-multiply_by_scalar(MATRIX_MULTIPLAYER, MATRIX)
+MATRIX_CASE_2 = [
+    [0.0, 1.1],
+    [-1.0, 0.0]
+]
+multiply_by_scalar(MATRIX_MULTIPLAYER, MATRIX_CASE_1)
 
 determinant_functions = {
     1: one_dimension_determinant,
@@ -133,6 +137,7 @@ def process_vector(original_vector: (), processing_vector: (), iteration_count: 
 
     multiplied_vector = multiply_matrix_by_vector(weight_matrix, processing_vector)
     result_vector = apply_activation_function(multiplied_vector)
+    print(f"Rezultat iteracji {iteration_count}: {result_vector}")
     if processing_vector != result_vector:
         result_vector_history.append(result_vector)
         cycle = get_cycle(result_vector_history)
@@ -140,7 +145,7 @@ def process_vector(original_vector: (), processing_vector: (), iteration_count: 
             print(f"Dla wektora {original_vector} {len(cycle) - 1}-stopniowa konfiguracja została znaleziona:")
             print(get_cyclic_configuration_str(cycle))
         else:
-            process_vector(original_vector, result_vector, iteration_count + 1, result_vector_history, MATRIX)
+            process_vector(original_vector, result_vector, iteration_count + 1, result_vector_history, weight_matrix)
     else:
         print(f"Dla wektora {original_vector} został znaleziony punkt stabilny {result_vector} w {iteration_count} iteracjach.")
         STABLE_POINTS.add(tuple(result_vector))
@@ -155,25 +160,51 @@ def validate_weight_matrix(matrix: (())):
     print(f"Czy macierz wejściowa jest dodatnio określona? - {boolean_to_pl(is_positively_determined(matrix))}")
 
 
-def generate_vectors():
+def generate_vectors(dimension: int):
     nums = (1, -1)
-    return ((i, j, k) for i in nums for j in nums for k in nums)
+    if dimension == 3:
+        return ((i, j, k) for i in nums for j in nums for k in nums)
+    else:
+        return ((i, j) for i in nums for j in nums)
+
 
 def process_vectors(vectors: (), weight_matrix: (())):
     for vector in vectors:
         print(f"\nRozpoczęto synchroniczne odświeżanie dla wektora : {vector}")
-        process_vector(vector, vector, 0, [], weight_matrix)
+        process_vector(vector, vector, 1, [], weight_matrix)
+
+
+def process_for_case_1():
+    print("\n================= ROZPOCZĘTO ODŚWIEŻANIE DLA ZADANIA 1 =================\n")
+
+    validate_weight_matrix(MATRIX_CASE_1)
+    tested_vectors = generate_vectors(len(MATRIX_CASE_1))
+    process_vectors(tested_vectors, MATRIX_CASE_1)
+
+    print(f"Wszystkie punkty stabilne sieci : {STABLE_POINTS}")
+    print("\n================= ZAKOŃCZONO ODŚWIEŻANIE DLA ZADANIA 1 =================\n")
+
+
+def process_for_case_2():
+    print("\n================= ROZPOCZĘTO ODŚWIEŻANIE DLA ZADANIA 2 =================\n")
+
+    validate_weight_matrix(MATRIX_CASE_2)
+    tested_vectors = generate_vectors(len(MATRIX_CASE_2))
+    process_vectors(tested_vectors, MATRIX_CASE_2)
+
+    print(f"Wszystkie punkty stabilne sieci : {STABLE_POINTS}")
+    print("\n================= ZAKOŃCZONO ODŚWIEŻANIE DLA ZADANIA 2 =================\n")
 
 
 def main():
+    global STABLE_POINTS
+    process_for_case_1()
     print("\n================= ROZPOCZĘTO =================\n")
 
-    validate_weight_matrix(MATRIX)
-    tested_vectors = generate_vectors()
-    process_vectors(tested_vectors, MATRIX)
+    process_for_case_1()
+    STABLE_POINTS = set()
+    process_for_case_2()
 
     print("\n================= ZAKOŃCZONO =================\n")
-    print(f"Wszystkie punkty stabilne sieci : {STABLE_POINTS}")
-
 
 main()
